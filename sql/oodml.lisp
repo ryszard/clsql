@@ -1097,13 +1097,17 @@ as elements of a list."
                     (order-by-list (copy-seq (listify order-by))))
 
                 (loop for i from 0 below (length order-by-list)
-                   do (etypecase (nth i order-by-list)
+                   do (typecase (nth i order-by-list)
                            (sql-ident-attribute
-                            (unless (slot-value (nth i order-by-list) 'qualifier)
-                              (setf (slot-value (nth i order-by-list) 'qualifier) table-name)))
+                            (handler-case
+                                (unless (slot-value (nth i order-by-list) 'qualifier)
+                                  (setf (slot-value (nth i order-by-list) 'qualifier) table-name))
+                              (simple-error ())))
                            (cons
-                            (unless (slot-value (car (nth i order-by-list)) 'qualifier)
-                              (setf (slot-value (car (nth i order-by-list)) 'qualifier) table-name)))
+                            (handler-case
+                             (unless (slot-value (car (nth i order-by-list)) 'qualifier)
+                               (setf (slot-value (car (nth i order-by-list)) 'qualifier) table-name))
+                              (simple-error ())))
                            (clsql-sys:sql-function-exp)))
                 (setf (getf qualifier-args :order-by) order-by-list)))
 
